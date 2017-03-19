@@ -8,7 +8,6 @@ from Person import *
 NUM_OF_NEIGHBORS = 8.0
 
 class Town:
-
     def __init__(self, dimension=30, pop_ratios=(0.45, 0.45), thresholds=(0.5, 0.5)):
         self._dimension = dimension
         self._size = dimension*dimension
