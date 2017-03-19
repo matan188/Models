@@ -45,33 +45,45 @@ class Town:
 
     # Check if person is satisfied of its neighbors
     def check_neighbors_satisfaction(self, person, row, col):
-        return (self.same_neighbors_num(person, row, col) / NUM_OF_NEIGHBORS) >= person.get_threshold()
+        if self.get_person_at_coord(row, col).get_race() == -1:
+            return True
+        return (self.same_neighbors_perc(person, row, col)) >= person.get_threshold()
 
-    def same_neighbors_num(self, person, row, col):
+    def same_neighbors_perc(self, person, row, col):
         pers_race = person.get_race()
 
-        # If empty space return true
-        if pers_race == -1:
-            return True
-
+        neighbors_num = 0
         same_race_counter = 0
+        empty_neighbors = 0
+
         if row - 1 >= 0:
+            neighbors_num += 1 * (self.get_person_at_coord(row-1, col).get_race != -1)
             same_race_counter += (self.get_person_at_coord(row-1, col).equal_race(pers_race))
             if col + 1 < self._dimension:
+                neighbors_num += 1 * (self.get_person_at_coord(row-1, col+1).get_race != -1)
                 same_race_counter += (self.get_person_at_coord(row-1, col+1).equal_race(pers_race))
             if col - 1 >= 0:
+                neighbors_num += 1 * (self.get_person_at_coord(row-1, col-1).get_race != -1)
                 same_race_counter += (self.get_person_at_coord(row-1, col-1).equal_race(pers_race))
         if row + 1 < self._dimension:
+            neighbors_num += 1 * (self.get_person_at_coord(row + 1, col).get_race != -1)
             same_race_counter += (self.get_person_at_coord(row+1, col).equal_race(pers_race))
             if col + 1 < self._dimension:
+                neighbors_num += 1 * (self.get_person_at_coord(row + 1, col + 1).get_race != -1)
                 same_race_counter += (self.get_person_at_coord(row+1, col+1).equal_race(pers_race))
             if col - 1 >= 0:
+                neighbors_num += 1 * (self.get_person_at_coord(row+1, col-1).get_race != -1)
                 same_race_counter += (self.get_person_at_coord(row+1, col-1).equal_race(pers_race))
         if col + 1 < self._dimension:
+            neighbors_num += 1 * (self.get_person_at_coord(row, col+1).get_race != -1)
             same_race_counter += (self.get_person_at_coord(row, col+1).equal_race(pers_race))
         if col - 1 >= 0:
+            neighbors_num += 1 * (self.get_person_at_coord(row, col-1).get_race != -1)
             same_race_counter += (self.get_person_at_coord(row, col-1).equal_race(pers_race))
-        return same_race_counter
+
+        if neighbors_num == 0:
+            return True
+        return same_race_counter / float(neighbors_num)
 
 
     def run_cycle(self):
@@ -105,7 +117,6 @@ class Town:
     def display(self):
         to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in range(self._dimension)]
         cmap = colors.ListedColormap(['gray', 'yellow', 'blue'])
-        print(cmap)
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
 
@@ -123,12 +134,12 @@ class Town:
         segregated_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
-                if self.same_neighbors_num(self.get_person_at_coord(row, col), row, col) == 8:
+                if self.same_neighbors_perc(self.get_person_at_coord(row, col), row, col) == 1:
                     segregated_persons += 1
         return segregated_persons / float(self._size)
 
 
-town = Town(dimension=10)
+town = Town(dimension=5)
 print(town.segregation_level())
 town.display()
 town.run_n_cycles()
