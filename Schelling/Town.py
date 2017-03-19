@@ -3,11 +3,13 @@ import matplotlib.pyplot as plt
 from matplotlib import colors
 import random
 import math
-from Person import *
+from Schelling.Person import *
 
 NUM_OF_NEIGHBORS = 8.0
 
+
 class Town:
+
     def __init__(self, dimension=30, pop_ratios=(0.45, 0.45), thresholds=(0.5, 0.5)):
         self._dimension = dimension
         self._size = dimension*dimension
@@ -41,7 +43,11 @@ class Town:
         grid = np.array(grid)
         return grid.reshape([self._dimension, self._dimension])
 
+    # Check if person is satisfied of its neighbors
     def check_neighbors_satisfaction(self, person, row, col):
+        return (self.same_neighbors_num(person, row, col) / NUM_OF_NEIGHBORS) >= person.get_threshold()
+
+    def same_neighbors_num(self, person, row, col):
         pers_race = person.get_race()
 
         # If empty space return true
@@ -65,17 +71,36 @@ class Town:
             same_race_counter += (self.get_person_at_coord(row, col+1).equal_race(pers_race))
         if col - 1 >= 0:
             same_race_counter += (self.get_person_at_coord(row, col-1).equal_race(pers_race))
-        print(same_race_counter)
-        return (same_race_counter/NUM_OF_NEIGHBORS) >= person.get_threshold()
+        return same_race_counter
+
 
     def run_cycle(self):
-        for row in self._dimension:
-            for col in self._dimension:
-                if self.check_neighbors_satisfaction(self.get_person_at_coord(row, col), row, col) == False:
+        for row in range(self._dimension):
+            for col in range(self._dimension):
+                if not self.check_neighbors_satisfaction(self.get_person_at_coord(row, col), row, col):
                     self.transfer(row, col)
 
+    def run_n_cycles(self, n=10):
+        for cycle in range(n):
+            self.run_cycle()
+
+
+    def set_person_to(self, person, row, col):
+        self._grid[row][col] = person
+
     def transfer(self, row, col):
-        pass
+        rand_int = random.randint(0, len(self._empty_coords)-1)
+        new_coords_ind = rand_int
+        empty_row, empty_col = self._empty_coords[new_coords_ind]
+        mover = self.get_person_at_coord(row, col)
+        empty = self.get_person_at_coord(empty_row, empty_col)
+
+        # swap
+        self.set_person_to(mover, empty_row, empty_col)
+        self.set_person_to(empty, row, col)
+
+        self._empty_coords[new_coords_ind] = (row, col)
+
 
     def display(self):
         to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in range(self._dimension)]
@@ -84,8 +109,28 @@ class Town:
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
 
-town = Town(dimension=3)
-print(town._grid)
-print(town.get_coords(-1))
-print(town.check_neighbors_satisfaction(town.get_person_at_coord(1,1), 1,1))
+    def plot(self):
+        to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in
+                   range(self._dimension)]
+        cmap = colors.ListedColormap(['gray', 'yellow', 'blue'])
+        print(cmap)
+        plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
+
+    def show(self):
+        plt.show()
+
+    def segregation_level(self):
+        segregated_persons = 0
+        for row in range(self._dimension):
+            for col in range(self._dimension):
+                if self.same_neighbors_num(self.get_person_at_coord(row, col), row, col) == 8:
+                    segregated_persons += 1
+        return segregated_persons / float(self._size)
+
+
+town = Town(dimension=10)
+print(town.segregation_level())
+town.display()
+town.run_n_cycles()
+print(town.segregation_level())
 town.display()
