@@ -31,6 +31,7 @@ class Town:
     def create_new_town(self, size, pop_ratios):
         race_nums = [math.floor(ratio * (size)) for ratio in pop_ratios]
         empties = self._size - sum(race_nums)
+        self._empties = empties
 
         # populate grid with empties
         grid = [Person(-1) for i in range(empties)]
@@ -57,32 +58,40 @@ class Town:
         empty_neighbors = 0
 
         if row - 1 >= 0:
-            neighbors_num += 1 * (self.get_person_at_coord(row-1, col).get_race != -1)
+            if self.get_person_at_coord(row-1, col).get_race() != -1:
+                neighbors_num += 1
             same_race_counter += (self.get_person_at_coord(row-1, col).equal_race(pers_race))
             if col + 1 < self._dimension:
-                neighbors_num += 1 * (self.get_person_at_coord(row-1, col+1).get_race != -1)
+                if self.get_person_at_coord(row-1, col+1).get_race() != -1:
+                    neighbors_num += 1
                 same_race_counter += (self.get_person_at_coord(row-1, col+1).equal_race(pers_race))
             if col - 1 >= 0:
-                neighbors_num += 1 * (self.get_person_at_coord(row-1, col-1).get_race != -1)
+                if self.get_person_at_coord(row-1, col-1).get_race() != -1:
+                    neighbors_num += 1
                 same_race_counter += (self.get_person_at_coord(row-1, col-1).equal_race(pers_race))
         if row + 1 < self._dimension:
-            neighbors_num += 1 * (self.get_person_at_coord(row + 1, col).get_race != -1)
+            if self.get_person_at_coord(row+1, col).get_race() != -1:
+                neighbors_num += 1
             same_race_counter += (self.get_person_at_coord(row+1, col).equal_race(pers_race))
             if col + 1 < self._dimension:
-                neighbors_num += 1 * (self.get_person_at_coord(row + 1, col + 1).get_race != -1)
+                if self.get_person_at_coord(row+1, col+1).get_race() != -1:
+                    neighbors_num += 1
                 same_race_counter += (self.get_person_at_coord(row+1, col+1).equal_race(pers_race))
             if col - 1 >= 0:
-                neighbors_num += 1 * (self.get_person_at_coord(row+1, col-1).get_race != -1)
+                if self.get_person_at_coord(row+1, col-1).get_race() != -1:
+                    neighbors_num += 1
                 same_race_counter += (self.get_person_at_coord(row+1, col-1).equal_race(pers_race))
         if col + 1 < self._dimension:
-            neighbors_num += 1 * (self.get_person_at_coord(row, col+1).get_race != -1)
+            if self.get_person_at_coord(row, col+1).get_race() != -1:
+                neighbors_num += 1
             same_race_counter += (self.get_person_at_coord(row, col+1).equal_race(pers_race))
         if col - 1 >= 0:
-            neighbors_num += 1 * (self.get_person_at_coord(row, col-1).get_race != -1)
+            if self.get_person_at_coord(row, col-1).get_race() != -1:
+                neighbors_num += 1
             same_race_counter += (self.get_person_at_coord(row, col-1).equal_race(pers_race))
 
         if neighbors_num == 0:
-            return True
+            return 1
         return same_race_counter / float(neighbors_num)
 
 
@@ -136,10 +145,11 @@ class Town:
             for col in range(self._dimension):
                 if self.same_neighbors_perc(self.get_person_at_coord(row, col), row, col) == 1:
                     segregated_persons += 1
-        return segregated_persons / float(self._size)
+        return segregated_persons / float(self._size - self._empties)
 
 
 town = Town(dimension=5)
+# print(town._grid)
 print(town.segregation_level())
 town.display()
 town.run_n_cycles()
