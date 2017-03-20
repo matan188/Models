@@ -13,16 +13,19 @@ class Town:
         self.check_arguments(dimension, pop_ratios, thresholds)
         self._race_num = len(pop_ratios)
         self._dimension = dimension
-        self._size = dimension*dimension
         self._thresholds = thresholds
-        self._grid = self.create_new_town(self._size, pop_ratios)
+        self._grid = self.create_new_town(self.size(), pop_ratios)
         self._empty_coords = self.get_coords(-1)
 
+    def size(self):
+        """ Returns town's size """
+        return self._dimension * self._dimension
+
     def check_arguments(self, dimension, pop_ratios, thresholds):
+        """ Assert given arguments conform to API """
         assert dimension > 0
         assert len(pop_ratios) == len(thresholds)
         assert sum(pop_ratios) <= 1
-
 
     def get_person_at_coord(self, row, col):
         """ Returns the person at coordinate (row,col) """
@@ -42,7 +45,7 @@ class Town:
     def create_new_town(self, size, pop_ratios):
         """ Creates a new town with population placed randomly according to ratios """
         race_nums = [math.floor(ratio * (size)) for ratio in pop_ratios]
-        empties = self._size - sum(race_nums)
+        empties = self.size() - sum(race_nums)
         self._empties = empties
 
         # populate grid with empties
@@ -145,7 +148,7 @@ class Town:
             for col in range(self._dimension):
                 if self.same_neighbors_perc(row, col) == 1:
                     segregated_persons += 1
-        return segregated_persons / float(self._size - self._empties), segregated_persons
+        return segregated_persons / float(self.size() - self._empties), segregated_persons
 
 
 town = Town(dimension=10, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
