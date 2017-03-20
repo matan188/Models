@@ -13,12 +13,12 @@ class Town:
         self.check_arguments(dimension, pop_ratios, thresholds)
         self._race_num = len(pop_ratios)
         self._dimension = dimension
-        self._thresholds = thresholds
-        self._grid = self.create_new_town(self.size(), pop_ratios)
+        self._grid = self.create_new_town(self.size(), pop_ratios, thresholds)
         self._empty_coords = self.get_coords(-1)
+        self._empties = 0
 
     def size(self):
-        """ Returns town's size """
+        """ :returns town's size """
         return self._dimension * self._dimension
 
     def check_arguments(self, dimension, pop_ratios, thresholds):
@@ -26,15 +26,17 @@ class Town:
         assert dimension > 0
         assert len(pop_ratios) == len(thresholds)
         assert sum(pop_ratios) <= 1
+        thresh_check = [thresh for thresh in thresholds if thresh < 0 or thresh > 1]
+        assert len(thresh_check) == 0
 
     def get_person_at_coord(self, row, col):
-        """ Returns the person at coordinate (row,col) """
+        """ :returns the person at coordinate (row,col) """
         if row < 0 or row >= self._dimension or col < 0 or col >= self._dimension:
             return None
         return self._grid[row][col]
 
     def get_coords(self, race):
-        """ Returns an array with all the coordinates of people of race race """
+        """ :returns an array with all the coordinates of people of race race """
         coords_arr = []
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -42,8 +44,9 @@ class Town:
                     coords_arr.append((row, col))
         return coords_arr
 
-    def create_new_town(self, size, pop_ratios):
-        """ Creates a new town with population placed randomly according to ratios """
+    def create_new_town(self, size, pop_ratios, thresholds):
+        """ Creates a new town with population placed randomly according to ratios
+            :returns 2D array populated with persons representing town """
         race_nums = [math.floor(ratio * (size)) for ratio in pop_ratios]
         empties = self.size() - sum(race_nums)
         self._empties = empties
@@ -52,7 +55,7 @@ class Town:
         grid = [Person(-1) for i in range(empties)]
 
         # populate grid with types
-        grid += [Person(race_ind, self._thresholds[race_ind]) for race_ind in range(len(race_nums)) for runner in range(race_nums[race_ind])]
+        grid += [Person(race_ind, thresholds[race_ind]) for race_ind in range(len(race_nums)) for runner in range(race_nums[race_ind])]
 
         # Shuffle randomly and rearrange to matrix
         random.shuffle(grid)
@@ -60,13 +63,13 @@ class Town:
         return grid.reshape([self._dimension, self._dimension])
 
     def check_neighbors_satisfaction(self, person, row, col):
-        """ Check if person is satisfied of its neighbors """
+        """ :returns True if person is satisfied\wants to move else False """
         if self.get_person_at_coord(row, col).get_race() == -1:
             return True
         return person.is_satisfied(self.same_neighbors_perc(row, col))
 
     def same_neighbors_perc(self, row, col):
-        """ Returns the percentage of neighbors that are of same race as person """
+        """ :returns the percentage of neighbors that are of same race as person """
         pers_race = self.get_person_at_coord(row, col).get_race()
         neighbors_num = 0
         same_race_counter = 0
@@ -85,7 +88,8 @@ class Town:
         return same_race_counter / float(neighbors_num)
 
     def run_cycle(self):
-        """ A cycle means going through all the population and transfer to random empty space if needed """
+        """ A cycle means going through all the population and transfer to random empty space if needed
+            :return True if a person was transferred, else False"""
         someone_transferred = False
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -95,7 +99,8 @@ class Town:
         return someone_transferred
 
     def run_n_cycles(self, n=10):
-        """ Run n cycles or until convergence """
+        """ Run n cycles or until convergence
+            :return Number of cycles that ran"""
         cycles = 0
         for cycle in range(n):
             cycles += 1
@@ -109,9 +114,11 @@ class Town:
 
     def transfer(self, row, col):
         """ Swap person with random empty space using the empty spaces coordinates array """
+        # Pick coordination of one of empties
         rand_int = random.randint(0, len(self._empty_coords)-1)
-        new_coords_ind = rand_int
-        empty_row, empty_col = self._empty_coords[new_coords_ind]
+        empty_row, empty_col = self._empty_coords[rand_int]
+
+        # Get moving person and empty "person"
         mover = self.get_person_at_coord(row, col)
         empty = self.get_person_at_coord(empty_row, empty_col)
 
@@ -119,7 +126,8 @@ class Town:
         self.set_person_to(mover, empty_row, empty_col)
         self.set_person_to(empty, row, col)
 
-        self._empty_coords[new_coords_ind] = (row, col)
+        # sets new coordination in empty coords array
+        self._empty_coords[rand_int] = (row, col)
 
     def display(self):
         """ Display town map """
@@ -128,21 +136,9 @@ class Town:
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
 
-    # Plot town map
-    def plot(self):
-        to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in
-                   range(self._dimension)]
-        cmap = colors.ListedColormap(['gray', 'yellow', 'blue'])
-        print(cmap)
-        plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
-
-    # Show plot
-    def show(self):
-        plt.show()
-
     # Calculate town's segregation level
     def segregation_level(self):
-        """ Returns town's segregation level (Number of persons surrounded uniquely by persons of same type """
+        """ :returns town's segregation level (Number of persons surrounded uniquely by persons of same type """
         segregated_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -151,7 +147,7 @@ class Town:
         return segregated_persons / float(self.size() - self._empties), segregated_persons
 
 
-town = Town(dimension=10, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
+town = Town(dimension=30, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
 print(town.segregation_level())
 town.display()
 print(town.run_n_cycles(30))
