@@ -59,7 +59,6 @@ class Town:
     def same_neighbors_perc(self, row, col):
         """ Returns the percentage of neighbors that are of same race as person """
         pers_race = self.get_person_at_coord(row, col).get_race()
-
         neighbors_num = 0
         same_race_counter = 0
 
