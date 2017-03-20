@@ -5,18 +5,24 @@ import random
 import math
 from Schelling.Person import *
 
-NUM_OF_NEIGHBORS = 8.0
-
 
 class Town:
 
     def __init__(self, dimension=30, pop_ratios=(0.45, 0.45), thresholds=(0.5, 0.5)):
         """ Initialize town object """
+        self.check_arguments(dimension, pop_ratios, thresholds)
+        self._race_num = len(pop_ratios)
         self._dimension = dimension
         self._size = dimension*dimension
         self._thresholds = thresholds
         self._grid = self.create_new_town(self._size, pop_ratios)
         self._empty_coords = self.get_coords(-1)
+
+    def check_arguments(self, dimension, pop_ratios, thresholds):
+        assert dimension > 0
+        assert len(pop_ratios) == len(thresholds)
+        assert sum(pop_ratios) <= 1
+
 
     def get_person_at_coord(self, row, col):
         """ Returns the person at coordinate (row,col) """
@@ -115,7 +121,7 @@ class Town:
     def display(self):
         """ Display town map """
         to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in range(self._dimension)]
-        cmap = colors.ListedColormap(['gray', 'yellow', 'blue'])
+        cmap = colors.ListedColormap(['gray', 'yellow', 'blue', 'green', 'orange', 'pink', 'red'][0:self._race_num+1])
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
 
@@ -133,6 +139,7 @@ class Town:
 
     # Calculate town's segregation level
     def segregation_level(self):
+        """ Returns town's segregation level (Number of persons surrounded uniquely by persons of same type """
         segregated_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -141,8 +148,7 @@ class Town:
         return segregated_persons / float(self._size - self._empties), segregated_persons
 
 
-town = Town(dimension=6)
-# print(town._grid)
+town = Town(dimension=10, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
 print(town.segregation_level())
 town.display()
 print(town.run_n_cycles(30))
