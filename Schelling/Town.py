@@ -27,7 +27,7 @@ class Town:
         assert len(pop_ratios) == len(thresholds)
         assert sum(pop_ratios) <= 1
         thresh_check = [thresh for thresh in thresholds if thresh < 0 or thresh > 1]
-        assert len(thresh_check) == 0
+        assert len(thresh_check) == 0  # Checks no threshold is below 0 or above 1
 
     def get_person_at_coord(self, row, col):
         """ :returns the person at coordinate (row,col) """
@@ -46,7 +46,7 @@ class Town:
 
     def create_new_town(self, size, pop_ratios, thresholds):
         """ Creates a new town with population placed randomly according to ratios
-            :returns 2D array populated with persons representing town """
+            :returns 2D array representing a town populated with persons """
         race_nums = [math.floor(ratio * (size)) for ratio in pop_ratios]
         empties = self.size() - sum(race_nums)
         self._empties = empties
