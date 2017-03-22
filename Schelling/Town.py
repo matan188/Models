@@ -191,9 +191,6 @@ class Town:
                     satisfied_persons += 1
         return satisfied_persons / float(self.size() - self._empties), satisfied_persons
 
-    def run_experiment(self):
-        pass
-
 
 def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4), time_param=False):
     thresholds = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
@@ -308,6 +305,8 @@ def initial_proportion_experiment(dimension=30, thresholds=(0.3, 0.3)):
 # empty_spaces_experiment()
 # initial_proportion_experiment()
 
+
+""" Comparison between original and time satisfaction models """
 thresholds_experiment(dimension=30, pop_ratios=(0.35, 0.35), time_param=False)
 thresholds_experiment(dimension=30, pop_ratios=(0.35, 0.35), time_param=True)
 
