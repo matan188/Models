@@ -4,7 +4,7 @@ class Person:
         """ Person's initialization """
         self._race = race
         self._threshold = threshold
-        self._timer = random.randint(2, 6)
+        self._timer = 5
 
     def __str__(self):
         """ String conversion of person """
@@ -37,7 +37,8 @@ class Person:
 
         if time_param == False:
             time_satisfaction = True
-
+        if time_satisfaction and self.neighbors_satisfaction(perc_same_neighbors) == False:
+            self._timer = 5
         return time_satisfaction and self.neighbors_satisfaction(perc_same_neighbors)
 
     def neighbors_satisfaction(self, perc_same_neighbors):

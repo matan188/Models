@@ -195,21 +195,17 @@ class Town:
         pass
 
 
-def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
+def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4), time_param=False):
     thresholds = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     segregation_level = []
     satisfaction_level = []
     cycles_num = []
     for i in range(len(thresholds)):
         curr_thresh = thresholds[i]
-        curr_town = Town(dimension, pop_ratios, thresholds=[curr_thresh, curr_thresh])
+        curr_town = Town(dimension, pop_ratios, thresholds=[curr_thresh, curr_thresh], time_param=time_param)
         cycles_num.append(curr_town.run_n_cycles(30))
         segregation_level.append(curr_town.segregation_level()[0])
         satisfaction_level.append(curr_town.satisfaction_level()[0])
-        if curr_thresh == 0.3:
-            print("segregation level at 0.3 is", curr_town.segregation_level())
-            print("segregation2 level at 0.3 is", curr_town.segregation_2())
-            curr_town.display()
 
     fig = plt.figure()
     satisfaction_plot = fig.add_subplot(221)
@@ -312,20 +308,23 @@ def initial_proportion_experiment(dimension=30, thresholds=(0.3, 0.3)):
 # empty_spaces_experiment()
 # initial_proportion_experiment()
 
+thresholds_experiment(dimension=30, pop_ratios=(0.35, 0.35), time_param=False)
+thresholds_experiment(dimension=30, pop_ratios=(0.35, 0.35), time_param=True)
+
 """ Simple town run and plot """
-town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3))
-print(town.satisfaction_level())
-town.display()
-print('cycles', town.run_n_cycles(30))
-print('segregation', town.segregation_level())
-print('satisfaction', town.satisfaction_level())
-town.display()
+# town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3))
+# print(town.satisfaction_level())
+# town.display()
+# print('cycles', town.run_n_cycles(30))
+# print('segregation', town.segregation_level())
+# print('satisfaction', town.satisfaction_level())
+# town.display()
 
 """ Simple town run and plot with time satisfaction taken into account """
-town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3), time_param=True)
-print(town.satisfaction_level())
-town.display()
-print('cycles', town.run_n_cycles(30))
-print('segregation', town.segregation_level())
-print('satisfaction', town.satisfaction_level())
-town.display()
+# town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3), time_param=True)
+# print(town.satisfaction_level())
+# town.display()
+# print('cycles', town.run_n_cycles(30))
+# print('segregation', town.segregation_level())
+# print('satisfaction', town.satisfaction_level())
+# town.display()
