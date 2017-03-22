@@ -8,11 +8,12 @@ from Schelling.Person import *
 
 class Town:
 
-    def __init__(self, dimension=30, pop_ratios=(0.45, 0.45), thresholds=(0.5, 0.5)):
+    def __init__(self, dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3), time_param=False):
         """ Initialize town object
         :param dimension: the length of each axis of the town
         :param pop_ratios: ratio of population of each race. sum should be <=1
         :param thresholds: bottom limit of same race neighbors. each threshold should be >=0 and <=1"""
+        self.time_param = time_param
         self.check_arguments(dimension, pop_ratios, thresholds)
         self._empties = 0
         self._race_num = len(pop_ratios)
@@ -80,7 +81,7 @@ class Town:
         """ :return True if person is satisfied\wants to move else False """
         if self.get_person_at_coord(row, col).get_race() == -1:
             return True
-        return person.is_satisfied(self.same_neighbors_perc(row, col))
+        return person.is_satisfied(self.same_neighbors_perc(row, col), time_param=self.time_param)
 
     def same_neighbors_perc(self, row, col):
         """ :return the percentage of neighbors that are of same race as person """
@@ -104,6 +105,9 @@ class Town:
         return same_race_counter / float(neighbors_num)
 
     def get_neighbors_array(self, row, col):
+        """ :param row
+            :param col
+            :return an array of the person's at [row,col] neighbors"""
         neighbors = []
         for prev_row in range(row - 1, row + 2):
             for prev_col in range(col-1, col + 2):
@@ -142,6 +146,8 @@ class Town:
     def transfer(self, row, col):
         """ Swap person with random empty space using the empty spaces coordinates array """
         # Pick coordination of one of empties
+        if len(self._empty_coords) == 0:
+            return
         rand_int = random.randint(0, len(self._empty_coords)-1)
         empty_row, empty_col = self._empty_coords[rand_int]
 
@@ -149,7 +155,7 @@ class Town:
         mover = self.get_person_at_coord(row, col)
         empty = self.get_person_at_coord(empty_row, empty_col)
 
-        # swap
+        # swap person with empty space in grid
         self.set_person_to(mover, empty_row, empty_col)
         self.set_person_to(empty, row, col)
 
@@ -202,6 +208,7 @@ def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
         satisfaction_level.append(curr_town.satisfaction_level()[0])
         if curr_thresh == 0.3:
             print("segregation level at 0.3 is", curr_town.segregation_level())
+            print("segregation2 level at 0.3 is", curr_town.segregation_2())
             curr_town.display()
 
     fig = plt.figure()
@@ -226,13 +233,99 @@ def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
     plt.show()
 
 
-thresholds_experiment(dimension=30, pop_ratios=(0.45, 0.45))
+def empty_spaces_experiment(dimension=30, thresholds=(0.3, 0.3)):
+    empty_spaces = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+
+    segregation_level = []
+    satisfaction_level = []
+    cycles_num = []
+    for i in range(len(empty_spaces)):
+        curr_empty = empty_spaces[i]
+        race_num = (1 - curr_empty) / 2.0
+        pop_ratios = (race_num, race_num)
+        curr_town = Town(dimension, pop_ratios, thresholds)
+        cycles_num.append(curr_town.run_n_cycles(30))
+        segregation_level.append(curr_town.segregation_level()[0])
+        satisfaction_level.append(curr_town.satisfaction_level()[0])
+
+    fig = plt.figure()
+    satisfaction_plot = fig.add_subplot(221)
+    satisfaction_plot.plot([100 * value for value in empty_spaces], [100 * value for value in satisfaction_level])
+    satisfaction_plot.set_ylim([0, 110])
+    satisfaction_plot.set_xlabel("Empty Ratio")
+    satisfaction_plot.set_ylabel("Satisfaction Level %")
+
+    segregation_plot = fig.add_subplot(223)
+    segregation_plot.set_ylim([0, 110])
+    segregation_plot.plot([100 * value for value in empty_spaces], [100 * value for value in segregation_level])
+    segregation_plot.set_xlabel("Empty Ratio")
+    segregation_plot.set_ylabel("Segregation Level %")
+
+    cycles_to_convergence = fig.add_subplot(122)
+    cycles_to_convergence.plot([100 * value for value in empty_spaces], cycles_num)
+    cycles_to_convergence.set_ylim([0, 30])
+    cycles_to_convergence.set_xlabel("Empty Ratio")
+    cycles_to_convergence.set_ylabel("# of Cycles to Convergence")
+
+    plt.show()
 
 
-# town = Town(dimension=30, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
-# print(town.satisfaction_level())
-# town.display()
-# print('cycles', town.run_n_cycles(30))
-# print('segregation', town.segregation_level())
-# print('satisfaction', town.satisfaction_level())
-# town.display()
+def initial_proportion_experiment(dimension=30, thresholds=(0.3, 0.3)):
+    yellow_ratio = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]
+
+    segregation_level = []
+    satisfaction_level = []
+    cycles_num = []
+    for i in range(len(yellow_ratio)):
+        curr_ration = yellow_ratio[i]
+        yellows = (1 - 0.1) * curr_ration
+        blues = 1 - 0.1 - yellows
+        pop_ratios = (blues, yellows)
+        curr_town = Town(dimension, pop_ratios, thresholds)
+        cycles_num.append(curr_town.run_n_cycles(30))
+        segregation_level.append(curr_town.segregation_level()[0])
+        satisfaction_level.append(curr_town.satisfaction_level()[0])
+
+    fig = plt.figure()
+    satisfaction_plot = fig.add_subplot(221)
+    satisfaction_plot.plot([100 * value for value in yellow_ratio], [100 * value for value in satisfaction_level])
+    satisfaction_plot.set_ylim([0, 110])
+    satisfaction_plot.set_xlabel("Yellow Percent")
+    satisfaction_plot.set_ylabel("Satisfaction Level %")
+
+    segregation_plot = fig.add_subplot(223)
+    segregation_plot.set_ylim([0, 110])
+    segregation_plot.plot([100 * value for value in yellow_ratio], [100 * value for value in segregation_level])
+    segregation_plot.set_xlabel("Yellow Percent")
+    segregation_plot.set_ylabel("Segregation Level %")
+
+    cycles_to_convergence = fig.add_subplot(122)
+    cycles_to_convergence.plot([100 * value for value in yellow_ratio], cycles_num)
+    cycles_to_convergence.set_ylim([0, 30])
+    cycles_to_convergence.set_xlabel("Yellow Percent")
+    cycles_to_convergence.set_ylabel("# of Cycles to Convergence")
+
+    plt.show()
+
+""" Experiments according to different according to different parameters """
+# thresholds_experiment(dimension=30, pop_ratios=(0.35, 0.35))
+# empty_spaces_experiment()
+# initial_proportion_experiment()
+
+""" Simple town run and plot """
+town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3))
+print(town.satisfaction_level())
+town.display()
+print('cycles', town.run_n_cycles(30))
+print('segregation', town.segregation_level())
+print('satisfaction', town.satisfaction_level())
+town.display()
+
+""" Simple town run and plot with time satisfaction taken into account """
+town = Town(dimension=30, pop_ratios=(0.35, 0.35), thresholds=(0.3, 0.3), time_param=True)
+print(town.satisfaction_level())
+town.display()
+print('cycles', town.run_n_cycles(30))
+print('segregation', town.segregation_level())
+print('satisfaction', town.satisfaction_level())
+town.display()

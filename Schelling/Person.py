@@ -26,16 +26,19 @@ class Person:
         """ Returns True if is of race race, else False"""
         return race == self._race
 
-    def is_satisfied(self, perc_same_neighbors):
+    def is_satisfied(self, perc_same_neighbors, time_param=False):
         """ Returns True if person is happy with where it lives else False """
         time_satisfaction = False
         if self._timer < 0:
-            self._timer = random.randint(1, 6)
+            self._timer = 5
         else:
             self._timer -= 1
             time_satisfaction = True
-        # return time_satisfaction and self.neighbors_satisfaction(perc_same_neighbors)
-        return self.neighbors_satisfaction(perc_same_neighbors)
+
+        if time_param == False:
+            time_satisfaction = True
+
+        return time_satisfaction and self.neighbors_satisfaction(perc_same_neighbors)
 
     def neighbors_satisfaction(self, perc_same_neighbors):
         return perc_same_neighbors >= self.get_threshold()
