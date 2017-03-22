@@ -14,11 +14,12 @@ class Town:
         :param pop_ratios: ratio of population of each race. sum should be <=1
         :param thresholds: bottom limit of same race neighbors. each threshold should be >=0 and <=1"""
         self.check_arguments(dimension, pop_ratios, thresholds)
+        self._empties = 0
         self._race_num = len(pop_ratios)
         self._dimension = dimension
         self._grid = self.create_new_town(self.size(), pop_ratios, thresholds)
         self._empty_coords = self.get_coords(-1)
-        self._empties = 0
+
 
     def size(self):
         """ :return town's size """
@@ -167,6 +168,8 @@ class Town:
         segregated_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
+                if self.get_person_at_coord(row, col).get_race() == -1:
+                    continue
                 if self.same_neighbors_perc(row, col) == 1:
                     segregated_persons += 1
         return segregated_persons / float(self.size() - self._empties), segregated_persons
@@ -176,6 +179,8 @@ class Town:
         satisfied_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
+                if self.get_person_at_coord(row, col).get_race() == -1:
+                    continue
                 if self.get_person_at_coord(row, col).neighbors_satisfaction(self.same_neighbors_perc(row, col)):
                     satisfied_persons += 1
         return satisfied_persons / float(self.size() - self._empties), satisfied_persons
@@ -185,7 +190,7 @@ class Town:
 
 
 def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
-    thresholds = [0, 0.1, 0.2, 0.33, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    thresholds = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
     segregation_level = []
     satisfaction_level = []
     cycles_num = []
@@ -196,6 +201,7 @@ def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
         segregation_level.append(curr_town.segregation_level()[0])
         satisfaction_level.append(curr_town.satisfaction_level()[0])
         if curr_thresh == 0.3:
+            print("segregation level at 0.3 is", curr_town.segregation_level())
             curr_town.display()
 
     fig = plt.figure()
@@ -220,7 +226,7 @@ def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
     plt.show()
 
 
-thresholds_experiment(dimension=30, pop_ratios=(0.40, 0.40))
+thresholds_experiment(dimension=30, pop_ratios=(0.45, 0.45))
 
 
 # town = Town(dimension=30, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
