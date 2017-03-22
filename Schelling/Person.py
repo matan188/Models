@@ -34,7 +34,10 @@ class Person:
         else:
             self._timer -= 1
             time_satisfaction = True
-        # return time_satisfaction and perc_same_neighbors >= self.get_threshold()
+        # return time_satisfaction and self.neighbors_satisfaction(perc_same_neighbors)
+        return self.neighbors_satisfaction(perc_same_neighbors)
+
+    def neighbors_satisfaction(self, perc_same_neighbors):
         return perc_same_neighbors >= self.get_threshold()
 
     def __float__(self):

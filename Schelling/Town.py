@@ -9,7 +9,10 @@ from Schelling.Person import *
 class Town:
 
     def __init__(self, dimension=30, pop_ratios=(0.45, 0.45), thresholds=(0.5, 0.5)):
-        """ Initialize town object """
+        """ Initialize town object
+        :param dimension: the length of each axis of the town
+        :param pop_ratios: ratio of population of each race. sum should be <=1
+        :param thresholds: bottom limit of same race neighbors. each threshold should be >=0 and <=1"""
         self.check_arguments(dimension, pop_ratios, thresholds)
         self._race_num = len(pop_ratios)
         self._dimension = dimension
@@ -18,11 +21,14 @@ class Town:
         self._empties = 0
 
     def size(self):
-        """ :returns town's size """
+        """ :return town's size """
         return self._dimension * self._dimension
 
     def check_arguments(self, dimension, pop_ratios, thresholds):
-        """ Assert given arguments conform to API """
+        """ Assert given arguments conform to API
+        :param dimension: the length of each axis of the town
+        :param pop_ratios: ratio of population of each race. sum should be <=1
+        :param thresholds: bottom limit of same race neighbors. each threshold should be >=0 and <=1"""
         assert dimension > 0
         assert len(pop_ratios) == len(thresholds)
         assert sum(pop_ratios) <= 1
@@ -30,13 +36,17 @@ class Town:
         assert len(thresh_check) == 0  # Checks no threshold is below 0 or above 1
 
     def get_person_at_coord(self, row, col):
-        """ :returns the person at coordinate (row,col) """
+        """ get person at grid[row][col]
+        :param row: row index
+        :param col: col index
+        :return the person at coordinate (row,col) """
         if row < 0 or row >= self._dimension or col < 0 or col >= self._dimension:
             return None
         return self._grid[row][col]
 
     def get_coords(self, race):
-        """ :returns an array with all the coordinates of people of race race """
+        """ :param race: which race to take in account
+        :return an array with all the coordinates of people of race race """
         coords_arr = []
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -46,7 +56,10 @@ class Town:
 
     def create_new_town(self, size, pop_ratios, thresholds):
         """ Creates a new town with population placed randomly according to ratios
-            :returns 2D array representing a town populated with persons """
+            :param size: # of cells in town. (dimension*dimension)
+            :param pop_ratios: ratio of population of each race. sum should be <=1
+            :param thresholds: bottom limit of same race neighbors. each threshold should be >=0 and <=1
+            :return 2D array representing a town populated with persons """
         race_nums = [math.floor(ratio * (size)) for ratio in pop_ratios]
         empties = self.size() - sum(race_nums)
         self._empties = empties
@@ -63,13 +76,13 @@ class Town:
         return grid.reshape([self._dimension, self._dimension])
 
     def check_neighbors_satisfaction(self, person, row, col):
-        """ :returns True if person is satisfied\wants to move else False """
+        """ :return True if person is satisfied\wants to move else False """
         if self.get_person_at_coord(row, col).get_race() == -1:
             return True
         return person.is_satisfied(self.same_neighbors_perc(row, col))
 
     def same_neighbors_perc(self, row, col):
-        """ :returns the percentage of neighbors that are of same race as person """
+        """ :return the percentage of neighbors that are of same race as person """
         pers_race = self.get_person_at_coord(row, col).get_race()
         neighbors_num = 0
         same_race_counter = 0
@@ -80,12 +93,25 @@ class Town:
                     curr = self.get_person_at_coord(prev_row, prev_col)
                     if curr == None:
                         continue
-                    same_race_counter += 1 if curr.equal_race(pers_race) else 0
-                    neighbors_num += 1 if curr.get_race() != -1 else 0
+                    if curr.equal_race(pers_race):
+                        same_race_counter += 1
+                    if curr.get_race() != -1:
+                        neighbors_num += 1
 
         if neighbors_num == 0:  # If no neighbors, person is happy
             return 1
         return same_race_counter / float(neighbors_num)
+
+    def get_neighbors_array(self, row, col):
+        neighbors = []
+        for prev_row in range(row - 1, row + 2):
+            for prev_col in range(col-1, col + 2):
+                if prev_row != row or prev_col != col:
+                    curr = self.get_person_at_coord(prev_row, prev_col)
+                    if curr == None:
+                        continue
+                    neighbors.append(curr.get_race())
+        return neighbors
 
     def run_cycle(self):
         """ A cycle means going through all the population and transfer to random empty space if needed
@@ -136,9 +162,8 @@ class Town:
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
 
-    # Calculate town's segregation level
     def segregation_level(self):
-        """ :returns town's segregation level (Number of persons surrounded uniquely by persons of same type """
+        """ :return town's segregation level (Number of persons surrounded uniquely by persons of same type """
         segregated_persons = 0
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -146,10 +171,62 @@ class Town:
                     segregated_persons += 1
         return segregated_persons / float(self.size() - self._empties), segregated_persons
 
+    def satisfaction_level(self):
+        """ :return the percentage of persons satisfied by their neighbors (according to their threshold) """
+        satisfied_persons = 0
+        for row in range(self._dimension):
+            for col in range(self._dimension):
+                if self.get_person_at_coord(row, col).neighbors_satisfaction(self.same_neighbors_perc(row, col)):
+                    satisfied_persons += 1
+        return satisfied_persons / float(self.size() - self._empties), satisfied_persons
 
-town = Town(dimension=30, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
-print(town.segregation_level())
-town.display()
-print(town.run_n_cycles(30))
-print(town.segregation_level())
-town.display()
+    def run_experiment(self):
+        pass
+
+
+def thresholds_experiment(dimension=30, pop_ratios=(0.4, 0.4)):
+    thresholds = [0, 0.1, 0.2, 0.33, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+    segregation_level = []
+    satisfaction_level = []
+    cycles_num = []
+    for i in range(len(thresholds)):
+        curr_thresh = thresholds[i]
+        curr_town = Town(dimension, pop_ratios, thresholds=[curr_thresh, curr_thresh])
+        cycles_num.append(curr_town.run_n_cycles(30))
+        segregation_level.append(curr_town.segregation_level()[0])
+        satisfaction_level.append(curr_town.satisfaction_level()[0])
+        if curr_thresh == 0.3:
+            curr_town.display()
+
+    fig = plt.figure()
+    satisfaction_plot = fig.add_subplot(221)
+    satisfaction_plot.plot([100 * value for value in thresholds], [100 * value for value in satisfaction_level])
+    satisfaction_plot.set_ylim([0, 100])
+    satisfaction_plot.set_xlabel("Threshold Value")
+    satisfaction_plot.set_ylabel("Satisfaction Level %")
+
+    segregation_plot = fig.add_subplot(223)
+    segregation_plot.set_ylim([0, 100])
+    segregation_plot.plot([100 * value for value in thresholds], [100 * value for value in segregation_level])
+    segregation_plot.set_xlabel("Threshold Value")
+    segregation_plot.set_ylabel("Segregation Level %")
+
+    cycles_to_convergence = fig.add_subplot(122)
+    cycles_to_convergence.plot([100 * value for value in thresholds], cycles_num)
+    cycles_to_convergence.set_ylim([0, 30])
+    cycles_to_convergence.set_xlabel("Threshold Value")
+    cycles_to_convergence.set_ylabel("# of Cycles to Convergence")
+
+    plt.show()
+
+
+thresholds_experiment(dimension=30, pop_ratios=(0.40, 0.40))
+
+
+# town = Town(dimension=30, pop_ratios=(0.40, 0.40), thresholds=(0.5, 0.5))
+# print(town.satisfaction_level())
+# town.display()
+# print('cycles', town.run_n_cycles(30))
+# print('segregation', town.segregation_level())
+# print('satisfaction', town.satisfaction_level())
+# town.display()
