@@ -18,6 +18,7 @@ class Game:
 
     def run_round(self):
         for player in self._players:
+            print(player.get_boldness_level(), player.get_vengefulness_level())
             if player.is_defect():
                 player.update_score(TEMPTATION)
                 for other in self._players:
@@ -44,7 +45,7 @@ game = Game()
 game.print_score()
 game.run_round()
 game.print_score()
-game.new_generation()
+# game.new_generation()
 
 
 
