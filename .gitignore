@@ -1,6 +1,6 @@
 .idea\*
 .idea
 .idea/*
-.Axelrod/__pycache__/*
-.Axelrod\__pycache__\*
-.Axelrod/__pycache__/
+Axelrod/__pycache__/*
+Axelrod\__pycache__\*
+Axelrod/__pycache__/
