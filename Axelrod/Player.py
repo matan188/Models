@@ -14,25 +14,31 @@ class Player:
 
     def get_boldness_level(self):
         level = 0
-        for i in range(len(self._boldness_binary)):
-            level += self._boldness_binary[i] * pow(2, i)
+        length = len(self._vengefulness_binary)
+        for i in range(length):
+            level += self._boldness_binary[i] * pow(2, length - i - 1)
         return level
 
+    def get_boldness(self):
+        return self.get_boldness_level() / 7.0
+
     def is_defect(self):
-        s = rand.random()
-        bold = self.get_boldness_level() / 7.0
-        return  bold > s
+        bold_threshold = rand.random()
+        return self.get_boldness() > bold_threshold
 
     def get_vengefulness_level(self):
         level = 0
-        for i in range(len(self._vengefulness_binary)):
-            level += self._vengefulness_binary[i] * pow(2, i)
+        length = len(self._vengefulness_binary)
+        for i in range(length):
+            level += self._vengefulness_binary[i] * pow(2, length-i-1)
         return level
 
+    def get_vengefulness(self):
+        return self.get_vengefulness_level() / 7.0
+
     def is_punish(self):
-        v = rand.random()
-        veng = self.get_vengefulness_level() / 7.0
-        return veng > v
+        veng_threshold = rand.random()
+        return self.get_vengefulness() > veng_threshold
 
     def get_score(self):
         return self._score

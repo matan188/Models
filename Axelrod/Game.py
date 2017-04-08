@@ -17,16 +17,20 @@ class Game:
         self.E = ENFORCEMENT
 
     def run_round(self):
+        seen_probability = rand.random()
         for player in self._players:
-            print(player.get_boldness_level(), player.get_vengefulness_level())
-            if player.is_defect():
+            if player.get_boldness() > seen_probability:
                 player.update_score(TEMPTATION)
+                got_punished = False
                 for other in self._players:
                     if other != player:
                         other.update_score(self.H)
-                        if other.is_punish():
-                            player.update_score(PUNISHMENT)
-                            other.update_score(ENFORCEMENT)
+                        if rand.random() < seen_probability:
+                            if other.is_punish():
+                                if not got_punished:
+                                    got_punished = True
+                                    player.update_score(PUNISHMENT)
+                                other.update_score(ENFORCEMENT)
 
     def new_generation(self):
         scores = np.array([player.get_score() for player in self._players])
@@ -37,15 +41,20 @@ class Game:
             if player.get_score() > average + std:
                 new_players.append(Player(player.get_boldness_level(), player.get_vengefulness_level()))
 
+    def print_boldness(self):
+        print([player.get_boldness_level() for player in self._players])
+
+    def print_vengeance(self):
+        print([player.get_vengefulness_level() for player in self._players])
 
     def print_score(self):
         print([player.get_score() for player in self._players])
 
 game = Game()
+game.print_boldness()
+game.print_vengeance()
 game.print_score()
 game.run_round()
 game.print_score()
 # game.new_generation()
-
-
 
