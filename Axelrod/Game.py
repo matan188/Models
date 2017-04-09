@@ -49,14 +49,24 @@ class Game:
         scores = np.array([player.get_score() for player in self._players])
         average = scores.mean()
         std = scores.std()
+        bests = []
+        medium = []
         new_players = []
         for player in self._players:
             if player.get_score() > average + std:
+                bests.append(player)
                 for i in range(2):
                     new_players.append(Player(player._boldness_binary, player._vengefulness_binary))
             elif player.get_score() > average - std and player.get_score() < average + std:
+                medium.append(player)
                 new_players.append(Player(player._boldness_binary, player._vengefulness_binary))
 
+        if len(new_players)<20:
+            for player in bests:
+                new_players.append(Player(player._boldness_binary, player._vengefulness_binary))
+        if len(new_players)<20:
+            for player in medium:
+                new_players.append(Player(player._boldness_binary, player._vengefulness_binary))
         self._players = new_players[:20]
 
     def print_boldness(self):
