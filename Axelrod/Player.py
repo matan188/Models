@@ -25,6 +25,9 @@ class Player:
             self._vengefulness_binary = new_venge
         self._score = 0
 
+    def init_score(self):
+        self._score = 0
+
     def update_score(self, points):
         self._score += points
 

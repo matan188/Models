@@ -18,6 +18,10 @@ class Game:
         self.E = ENFORCEMENT
         self.M = 0
 
+    def reinit_players(self):
+        length = len(self._players)
+        self._players = [Player() for i in range(length)]
+
     def run_round(self):
         """ Goes through each player, checks if defects and activate other players accordingly """
         s = rand.random()
@@ -67,7 +71,28 @@ class Game:
         if len(new_players)<20:
             for player in medium:
                 new_players.append(Player(player._boldness_binary, player._vengefulness_binary))
+        if len(new_players) == 0:
+            self.init_scores()
+            return
         self._players = new_players[:20]
+
+    def init_scores(self):
+        for p in self._players:
+            p.init_score()
+
+    def run_n_generations(self, n=100):
+        for curr_gen in range(n):
+            self.run_round()
+            self.print_score()
+            self.new_generation()
+            self.count += 1
+
+    def run(self, times=5, generations=100):
+        self.count = 0
+        for i in range(times):
+            self.run_n_generations(generations)
+            self.reinit_players()
+        print(self.count)
 
     def print_boldness(self):
         print([player.get_boldness_level() for player in self._players])
@@ -82,11 +107,4 @@ class Game:
         pass
 
 game = Game()
-game.print_boldness()
-game.print_vengeance()
-game.print_score()
-game.run_round()
-game.print_score()
-game.new_generation()
-print(len(game._players))
-game.print_boldness()
+game.run()
