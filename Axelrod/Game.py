@@ -1,6 +1,8 @@
 from Axelrod.Player import *
 import random as rand
 import numpy as np
+import matplotlib.pyplot as plt
+import math
 
 TEMPTATION = 3
 PUNISHMENT = -9
@@ -17,6 +19,11 @@ class Game:
         self.H = HURT
         self.E = ENFORCEMENT
         self.M = 0
+        self.pop_stats = []
+        self.bins = dict()
+        self.post_bins = dict()
+        self.cycle_bold_averages = []
+        self.cycle_venge_averages = []
 
     def reinit_players(self):
         length = len(self._players)
@@ -80,19 +87,28 @@ class Game:
         for p in self._players:
             p.init_score()
 
+    def update_initial_stats(self):
+        boldness_avg = np.mean([player.get_boldness_level() for player in self._players])
+        venge_avg = np.mean([player.get_vengefulness_level() for player in self._players])
+        self.pop_stats.append((boldness_avg, venge_avg))
+
     def run_n_generations(self, n=100):
         for curr_gen in range(n):
+            self.update_initial_stats()
             self.run_round()
-            self.print_score()
             self.new_generation()
-            self.count += 1
 
     def run(self, times=5, generations=100):
-        self.count = 0
         for i in range(times):
             self.run_n_generations(generations)
+            self.update_cycle_averages()
             self.reinit_players()
-        print(self.count)
+
+    def update_cycle_averages(self):
+        bold_avg = np.mean([player.get_boldness_level() for player in self._players])
+        venge_avg = np.mean([player.get_vengefulness_level() for player in self._players])
+        self.cycle_bold_averages.append(bold_avg)
+        self.cycle_venge_averages.append(venge_avg)
 
     def print_boldness(self):
         print([player.get_boldness_level() for player in self._players])
@@ -103,8 +119,56 @@ class Game:
     def print_score(self):
         print([player.get_score() for player in self._players])
 
-    def split_to_bins(self):
-        pass
+    def pop_to_bins(self):
+        for ind in range(len(self.pop_stats)):
+            if (ind+1) % 100 == 0:  # ignore when starting new round of generations
+                continue
+            stat = self.pop_stats[ind]
+            post_stat =  self.pop_stats[ind+1]
+            b = math.floor(stat[0]) if math.floor(stat[0]) < 7 else 6
+            v = math.floor(stat[1]) if math.floor(stat[1]) < 7 else 6
+            if (b, v) in self.bins:
+                self.bins[(b, v)].append(stat)
+                self.post_bins[(b, v)].append(post_stat)
+            else:
+                self.bins[(b, v)] = [stat]
+                self.post_bins[(b, v)] = [post_stat]
+
+    def bins_to_arrow_tuples(self):
+        arrows = []
+        for key in self.bins:
+            bold = []
+            venge = []
+            bold_next = []
+            venge_next = []
+            for ind in range(len(self.bins[key])):
+                bold.append(self.bins[key][ind][0])
+                venge.append(self.bins[key][ind][1])
+                bold_next.append(self.post_bins[key][ind][0])
+                venge_next.append(self.post_bins[key][ind][1])
+            b = np.mean(bold)
+            v = np.mean(venge)
+            db = b-np.mean(bold_next)
+            dv = v-np.mean(venge_next)
+            arrow = (b, v, db, dv)
+            arrows.append(arrow)
+        return arrows
+
+    def display(self):
+        arrows = self.bins_to_arrow_tuples()
+        # x = np.arange(8)
+        # y = x
+        # plt.plot(x, y)
+        ax = plt.gca()
+        for arr in arrows:
+            patch = plt.Arrow(arr[0], arr[1], arr[2], arr[3], width=0.3)
+            ax.add_patch(patch)
+        plt.scatter(self.cycle_bold_averages, self.cycle_venge_averages, edgecolors='black')
+        plt.show()
+
 
 game = Game()
 game.run()
+game.pop_to_bins()
+game.display()
+
