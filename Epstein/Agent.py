@@ -2,7 +2,7 @@ import random
 import numpy as np
 
 MOVES = [30, 50, 70]
-EPSILON = 0.1
+EPSILON = 0.2
 
 class Agent:
     def __init__(self, m=10, epsilon=EPSILON, tag=0):
@@ -12,7 +12,7 @@ class Agent:
         self.tag = tag
 
     def update_memory(self, move):
-        self.memory.pop()
+        self.memory.pop(0)
         self.memory.append(move)
 
     def best_move(self):
@@ -27,6 +27,13 @@ class Agent:
                 best_moves = [move]
                 curr_max = outcome
         return random.choice(best_moves)
+
+    def get_move_gains(self):
+        gains = []
+        for move_ind in range(len(MOVES)):
+            move = MOVES[move_ind]
+            gains.append(sum([0 if (move+past)>100 else move for past in self.memory]))
+        return gains
 
     def get_history_percentage(self):
         """ Returns a dictionary with history percentages """
