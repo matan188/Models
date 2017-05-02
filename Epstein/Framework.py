@@ -12,7 +12,6 @@ class Framework:
 
     def round(self):
         reagents = []
-        moves_track = dict({30: 0, 50: 0, 70: 0})
         while len(self.agents) > 0:
             idx1 = random.randrange(0, len(self.agents))
             p1 = self.agents.pop(idx1)
@@ -24,88 +23,87 @@ class Framework:
             move2 = p2.play()
             p1.update_memory(move2)
             p2.update_memory(move1)
-            moves_track[move1] += 1
-            moves_track[move2] += 1
         self.agents = reagents
-        print(moves_track)
-        print(sum([moves_track[30], moves_track[50], moves_track[70]]))
-        tup = (moves_track[30]/self.num_agents, moves_track[50]/self.num_agents, moves_track[70]/self.num_agents)
-        print(tup)
+
+    def update_percentages(self):
+        moves_track = dict({30: 0, 50: 0, 70: 0})
+
+        for ag in self.agents:
+            moves_track[ag.best_move()] += 1
+
+        tup = (moves_track[30] / self.num_agents, moves_track[50] / self.num_agents, moves_track[70] / self.num_agents)
+
         self.move_percentages.append(tup)
-        return
 
     def run_n_rounds(self, n=100):
+        self.update_percentages()
+        print("{}: {}".format(0, self.move_percentages[0]))
         for i in range(n):
             self.round()
+            self.update_percentages()
+        print("{}: {}".format(200, self.move_percentages[i]))
+
+    def run_simulations(self, num=20):
+        pass
+
+    def display_players(self):
+        raw_data = []
+        for agent in self.agents:
+            raw_data.append(agent.get_history_percentage())
+
+        data = [{
+            'type': 'scatterternary',
+            'mode': 'markers',
+            'a': [i for i in map(lambda x: x['High'], raw_data)],
+            'b': [i for i in map(lambda x: x['Medium'], raw_data)],
+            'c': [i for i in map(lambda x: x['Low'], raw_data)],
+            'text': [i for i in map(lambda x: x['label'], raw_data)],
+            'marker': {
+                'symbol': 100,
+                'color': '#000000',
+                'size': 5,
+                'line': {'width': 1}
+            },
+        }]
+
+        layout = {
+            'ternary': {
+                'sum': 1,
+                'aaxis': self.make_axis('High', 0),
+                'baxis': self.make_axis('<br>Medium', 45),
+                'caxis': self.make_axis('<br>Low', -45)
+            },
+            'annotations': [{
+                'showarrow': False,
+                'text': 'Simple Ternary Plot with Markers',
+                'x': 0.5,
+                'y': 1.3,
+                'font': {'size': 15}
+            }]
+        }
+
+        fig = {'data': data, 'layout': layout}
+        py.plot(fig)
+
+    def make_axis(self, title, tickangle):
+        return {
+            'title': title,
+            'titlefont': {'size': 20},
+            'tickangle': tickangle,
+            'tickfont': {'size': 15},
+            'tickcolor': 'rgba(0,0,0,0)',
+            'ticklen': 5,
+            'showline': True,
+            'showgrid': True
+        }
+
 
 fram = Framework()
-fram.round()
+fram.run_n_rounds(200)
+print(fram.move_percentages[-1])
+fram.display_players()
 
 
+# ag = Agent()
+# ag.get_history_percentage()
 
-
-
-
-
-
-#
-# rawData = [
-#     {'High':75,'Medium':25,'Low':0,'label':'point 1'},
-#     {'High':70,'Medium':10,'Low':20,'label':'point 2'},
-#     {'High':75,'Medium':20,'Low':5,'label':'point 3'},
-#     {'High':5,'Medium':60,'Low':35,'label':'point 4'},
-#     {'High':10,'Medium':80,'Low':10,'label':'point 5'},
-#     {'High':10,'Medium':90,'Low':0,'label':'point 6'},
-#     {'High':20,'Medium':70,'Low':10,'label':'point 7'},
-#     {'High':10,'Medium':20,'Low':70,'label':'point 8'},
-#     {'High':15,'Medium':5,'Low':80,'label':'point 9'},
-#     {'High':10,'Medium':10,'Low':80,'label':'point 10'},
-#     {'High':20,'Medium':10,'Low':70,'label':'point 11'},
-# ];
-#
-# def makeAxis(title, tickangle):
-#     return {
-#       'title': title,
-#       'titlefont': { 'size': 20 },
-#       'tickangle': tickangle,
-#       'tickfont': { 'size': 15 },
-#       'tickcolor': 'rgba(0,0,0,0)',
-#       'ticklen': 5,
-#       'showline': True,
-#       'showgrid': True
-#     }
-#
-# data = [{
-#     'type': 'scatterternary',
-#     'mode': 'markers',
-#     'a': [i for i in map(lambda x: x['High'], rawData)],
-#     'b': [i for i in map(lambda x: x['Medium'], rawData)],
-#     'c': [i for i in map(lambda x: x['Low'], rawData)],
-#     'text': [i for i in map(lambda x: x['label'], rawData)],
-#     'marker': {
-#         'symbol': 100,
-#         'color': '#000000',
-#         'size': 5,
-#         'line': { 'width': 1 }
-#     },
-#     }]
-#
-# layout = {
-#     'ternary': {
-#         'sum': 1,
-#         'aaxis': makeAxis('High', 0),
-#         'baxis': makeAxis('<br>Medium', 45),
-#         'caxis': makeAxis('<br>Low', -45)
-#     },
-#     'annotations': [{
-#       'showarrow': False,
-#       'text': 'Simple Ternary Plot with Markers',
-#         'x': 0.5,
-#         'y': 1.3,
-#         'font': { 'size': 15 }
-#     }]
-# }
-#
-# fig = {'data': data, 'layout': layout}
-# # py.iplot(fig, validate=False)
-# py.plot(fig)
