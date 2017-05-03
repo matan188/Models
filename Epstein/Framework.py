@@ -3,7 +3,7 @@ import plotly.graph_objs as go
 import plotly
 import plotly.figure_factory as ff
 from Epstein.Agent import *
-
+plotly.tools.set_credentials_file(username='matanmo', api_key='MGEbbwr3piTrgRfFJ8Oy')
 
 class Framework:
     def __init__(self, num_agents=200.0):

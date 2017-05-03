@@ -7,8 +7,10 @@ EPSILON = 0.1
 class Agent:
     def __init__(self, m=10, epsilon=EPSILON, tag=0):
         self.memory = []
-        self.memory.append([30 if tag==1 else 70 for i in range(10)])
-        self.memory.append([70 if tag==1 else 30 for i in range(10)]) #random.choice(MOVES)
+        # self.memory.append([30 if tag==1 else 70 for i in range(10)])
+        # self.memory.append([70 if tag==0 else 30 for i in range(10)]) #random.choice(MOVES)
+        self.memory.append([50 if tag == 0 else 30 for i in range(10)])
+        self.memory.append([50 if tag == 1 else 70 for i in range(10)])  # random.choice(MOVES)
         self.m = m
         self.epsilon = epsilon
         self.tag = tag
