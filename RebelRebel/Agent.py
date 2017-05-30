@@ -25,7 +25,7 @@ class Agent(Person):
     def get_grievance(self):
         return self._hardship*(1 - self._legitimacy)
 
-    def set_state(self, num_cop: float, num_agent: float):
+    def set_state(self, num_active: float, num_cop: float):
         p = 1 - (1 - np.exp(-K * (num_cop/num_agent)))
         n = p * self._risk * math.pow(MAX_JAIL, ALPHA)
         g = self._hardship * (1 - self._legitimacy)

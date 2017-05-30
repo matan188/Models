@@ -52,15 +52,57 @@ class Town:
                 if i >= 0 or i < self._dimension:
                     curr_p = self.get_person_at_coord(i, col)
                     if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
-                        active_coord.append(i, col)
+                        active_coord.append((i, col))
 
             for j in range(col - p.get_vision(), col + p.get_vision()):
                 if i >= 0 or i < self._dimension:
                     curr_p = self.get_person_at_coord(i, row)
                     if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
-                        active_coord.append(j, row)
-
+                        active_coord.append((row, j))
             p.arrest()
+        else:
+            active_count = 0.0
+            cop_count = 0.0
+            for i in range(row - p.get_vision(), row + p.get_vision()):
+                if i >= 0 or i < self._dimension:
+                    curr_p = self.get_person_at_coord(i, col)
+                    if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
+                        active_count += 1
+                    elif curr_p != -1 and curr_p.get_type() == "c":
+                        cop_count += 1
+
+            for j in range(col - p.get_vision(), col + p.get_vision()):
+                if i >= 0 or i < self._dimension:
+                    curr_p = self.get_person_at_coord(i, row)
+                    if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
+                        active_count += 1
+                    elif curr_p != -1 and curr_p.get_type() == "c":
+                        cop_count += 1
+                p.set_state(active_count, cop_count)
+
+    def run_round(self):
+        for row in range(self._dimension):
+            for col in range(self._dimension):
+                p = self.get_person_at_coord(row, col)
+                if p is not None:
+                    self.move_person(row, col)
+                self.person_action(row, col)
+
+    def move_person(self, row, col):
+        vision = self.get_person_at_coord(row, col).get_vision()
+        all_coords = self.get_vision_col(vision, row, col) + self.get_vision_row(vision, row, col)
+        empties = [coord for coord in all_coords if self.get_person_at_coord(coord[0], coord[1]) is not None]
+        if len(empties) > 0:
+            chosen = rand.choice(empties)
+            self._grid[chosen[0], chosen[1]] = self.get_person_at_coord(row, col)
+            self._grid[row, col] = None
+
+    def get_vision_col(self, vision, row, col):
+        return [(j, col) for j in range(row - vision, row + vision) if j != col and 0 <= j < self._dimension]
+
+    def get_vision_row(self, vision, row, col):
+        return [(row, i) for i in range(col - vision, col + vision) if i != col and 0 <= i < self._dimension]
+
 
 
 town = Town()
