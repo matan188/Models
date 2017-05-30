@@ -21,9 +21,7 @@ class Town:
         empties = self._size - agent_num - cop_num
 
         grid = [Agent(self._legitimacy) for i in range(agent_num)]
-
         grid += [Cop() for i in range(cop_num)]
-
         grid += [-1 for i in range(empties)]
 
         rand.shuffle(grid)
@@ -43,6 +41,27 @@ class Town:
         cmap = colors.ListedColormap(['gray',  'black', 'blue', 'red'])
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
+
+    def person_action(self, row, col):
+        p = self.get_person_at_coord(row, col)
+        if p == -1:
+            return
+        elif p.get_type() == "c":
+            active_coord = []
+            for i in range(row - p.get_vision(), row + p.get_vision()):
+                if i >= 0 or i < self._dimension:
+                    curr_p = self.get_person_at_coord(i, col)
+                    if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
+                        active_coord.append(i, col)
+
+            for j in range(col - p.get_vision(), col + p.get_vision()):
+                if i >= 0 or i < self._dimension:
+                    curr_p = self.get_person_at_coord(i, row)
+                    if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
+                        active_coord.append(j, row)
+
+            p.arrest()
+
 
 town = Town()
 town.display()
