@@ -12,6 +12,7 @@ class Town:
                  k=2.3, aplha=0, j_max=10):
         self._legitimacy = legitimacy
         self._dimension = dimension
+        self._agent_num = 0
         agent_density = density-cop_density
         self._size = dimension*dimension
         self._grid = self.create_town(cop_density, agent_density)
@@ -20,6 +21,7 @@ class Town:
 
     def create_town(self, cop_density, agent_density):
         agent_num = math.floor(self._size * agent_density)
+        self._agent_num = agent_num
         cop_num = math.floor(self._size * cop_density)
         empties = self._size - agent_num - cop_num
 
@@ -93,7 +95,6 @@ class Town:
         self._jail.append(agent)
         # TODO put prisoners back in the game
 
-
     def run_round(self):
         for row in range(self._dimension):
             for col in range(self._dimension):
@@ -104,12 +105,17 @@ class Town:
         self.let_out_of_jail()
 
     def let_out_of_jail(self):
-        for ag in self._jail:
+        to_remove = []
+        for ind in range(len(self._jail)):
+            ag = self._jail[ind]
             ag.decrease_time()
             if ag.get_time() < 0:
                 coord = rand.choice(self.get_empties())
                 self._grid[coord[0]][coord[1]] = ag
+                to_remove.append(ind)
 
+        for remove_ind in range(len(to_remove)-1, -1, -1):
+            del self._jail[to_remove[remove_ind]]
 
     def move_person(self, row, col):
         vision = self.get_person_at_coord(row, col).get_vision()
@@ -121,10 +127,10 @@ class Town:
             self._grid[row, col] = -1
 
     def get_vision_col(self, vision, row, col):
-        return [(j, col) for j in range(row - vision, row + vision) if j != col and 0 <= j < self._dimension]
+        return [(j % self._dimension, col) for j in range(row - vision, row + vision) if j != row]
 
     def get_vision_row(self, vision, row, col):
-        return [(row, i) for i in range(col - vision, col + vision) if i != col and 0 <= i < self._dimension]
+        return [(row, i % self._dimension) for i in range(col - vision, col + vision) if i != col]
 
     def get_empties(self):
         empties = []
@@ -134,11 +140,27 @@ class Town:
                     empties.append((row, col))
         return empties
 
+    def run_n_rounds(self, n=100):
+        for i in range(n):
+            self.run_round()
+            if i % 10 == 0:
+                print(self.get_rebelliousness_level())
+
+    def get_rebelliousness_level(self):
+        actives = 0.0
+        for row in range(self._dimension):
+            for col in range(self._dimension):
+                p = self.get_person_at_coord(row, col)
+                if p != -1 and p.get_type() == 'a' and p.is_active():
+                    actives += 1
+        return actives / self._agent_num
+
+
+
+
 
 
 town = Town()
-town.display()
-town.run_round()
-town.display()
-town.run_round()
-town.display()
+print(town.get_rebelliousness_level())
+town.run_n_rounds()
+print(town.get_rebelliousness_level())

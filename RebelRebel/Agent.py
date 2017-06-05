@@ -5,7 +5,7 @@ import math as math
 
 K = 2.3
 ALPHA = 0
-MAX_JAIL = 10
+MAX_JAIL = 100
 THRESHOLD = 0.1
 
 class Agent(Person):
