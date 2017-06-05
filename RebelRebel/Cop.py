@@ -12,7 +12,8 @@ class Cop(Person):
         return "'C'"
 
     def arrest(self, active_indices_in_vision):
-        return rand.choice(active_indices_in_vision)
+        if len(active_indices_in_vision) > 0:
+            return rand.choice(active_indices_in_vision)
 
     def __float__(self):
         return 0.0

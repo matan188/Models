@@ -15,6 +15,16 @@ class Agent(Person):
         self._risk = rand.random()
         self._legitimacy = legitimacy
         self._active = False
+        self._time_left = -1
+
+    def decrease_time(self):
+        self._time_left -= 1
+
+    def get_time(self):
+        return self._time_left
+
+    def set_time(self, time):
+        self._time_left = time
 
     def set_active(self, val):
         self._active = val
@@ -26,7 +36,7 @@ class Agent(Person):
         return self._hardship*(1 - self._legitimacy)
 
     def set_state(self, num_active: float, num_cop: float):
-        p = 1 - (1 - np.exp(-K * (num_cop/num_agent)))
+        p = 1 - (1 - np.exp(-K * (num_cop/(1+num_active))))
         n = p * self._risk * math.pow(MAX_JAIL, ALPHA)
         g = self._hardship * (1 - self._legitimacy)
         if g - n > THRESHOLD:
