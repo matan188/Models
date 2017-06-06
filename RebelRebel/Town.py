@@ -16,6 +16,7 @@ class Town:
         agent_density = density-cop_density
         self._size = dimension*dimension
         self._grid = self.create_town(cop_density, agent_density)
+        self._j_max = j_max
         self._jail = []
         self._curr_round = 0
         self._rebellions_level = []
@@ -89,12 +90,11 @@ class Town:
     def put_in_jail(self, coord):
         if coord is None:
             return
-        time = rand.randint(0, ROUNDS - self._curr_round)
+        time = rand.randint(0, self._j_max)
         agent = self.get_person_at_coord(coord[0], coord[1])
         self._grid[coord[0]][coord[1]] = -1
         agent.set_time(time)
         self._jail.append(agent)
-        # TODO put prisoners back in the game
 
     def run_round(self):
         for row in range(self._dimension):
@@ -166,24 +166,48 @@ class Town:
     def get_rebel_average(self):
         return np.mean(self._rebellions_level)
 
+    def get_jail_level(self):
+        return len(self._jail) / self._agent_num
+
 
 
 
 def plots(rounds=100):
-    cop_densities=[0, 0.05, 0.074, 0.1, 0.3]
+    cop_densities = [0, 0.05, 0.074, 0.1, 0.15, 0.2]
     level_for_cops = []
     for dens in cop_densities:
         town = Town(cop_density=dens)
-        town.display()
+        # town.display()
         town.run_n_rounds(n=rounds)
-        level_for_cops.append(town.get_rebel_average())
         print(town._rebellions_level)
+        level_for_cops.append(town.get_rebel_average())
     print(level_for_cops)
+
+    plt.scatter(cop_densities, level_for_cops)
+    plt.title("Rebelliousness Level per Cop Density")
+    plt.ylabel("Rebelliousness Level")
+    plt.xlabel("Cop Density")
+    plt.show()
+
+    max_jail_term = [0, 25, 50, 75, 100]
+    level_for_jail_time = []
+    for j in max_jail_term:
+        town = Town(j_max=j)
+        town.run_n_rounds(n=rounds)
+        print(town.get_jail_level())
+        level_for_jail_time.append(town.get_rebel_average())
+    print(level_for_jail_time)
+    plt.scatter(max_jail_term, level_for_jail_time)
+    plt.title("Rebelliousness Level per Max Jail Term")
+    plt.ylabel("Rebelliousness Level")
+    plt.xlabel("Max Jail Term")
+    plt.show()
+
 
 
 
 plots()
-# town = Town()
+# town = Town(cop_density=0.0)
 # print(town.get_rebelliousness_level())
 # town.run_n_rounds()
 # print(town.get_rebelliousness_level())
