@@ -18,6 +18,7 @@ class Town:
         self._grid = self.create_town(cop_density, agent_density)
         self._jail = []
         self._curr_round = 0
+        self._rebellions_level = []
 
     def create_town(self, cop_density, agent_density):
         agent_num = math.floor(self._size * agent_density)
@@ -43,7 +44,6 @@ class Town:
     def display(self):
         """ Display town map """
         to_show = [[float(self.get_person_at_coord(row, col)) for col in range(self._dimension)] for row in range(self._dimension)]
-        print(to_show)
         cmap = colors.ListedColormap(('gray', 'black', 'blue', 'red'))
         plt.imshow(to_show, cmap=cmap, interpolation="nearest", extent=[0, self._dimension, 0, self._dimension])
         plt.show()
@@ -149,7 +149,10 @@ class Town:
         for i in range(n):
             self.run_round()
             if i % 10 == 0:
-                print(self.get_rebelliousness_level())
+                curr_rebel_level = self.get_rebelliousness_level()
+                # print(curr_rebel_level)
+                self._rebellions_level.append(curr_rebel_level)
+                # self.display()
 
     def get_rebelliousness_level(self):
         actives = 0.0
@@ -160,12 +163,27 @@ class Town:
                     actives += 1
         return actives / self._agent_num
 
+    def get_rebel_average(self):
+        return np.mean(self._rebellions_level)
 
 
 
 
+def plots(rounds=100):
+    cop_densities=[0, 0.05, 0.074, 0.1, 0.3]
+    level_for_cops = []
+    for dens in cop_densities:
+        town = Town(cop_density=dens)
+        town.display()
+        town.run_n_rounds(n=rounds)
+        level_for_cops.append(town.get_rebel_average())
+        print(town._rebellions_level)
+    print(level_for_cops)
 
-town = Town()
-print(town.get_rebelliousness_level())
-town.run_n_rounds()
-print(town.get_rebelliousness_level())
+
+
+plots()
+# town = Town()
+# print(town.get_rebelliousness_level())
+# town.run_n_rounds()
+# print(town.get_rebelliousness_level())
