@@ -54,13 +54,13 @@ class Town:
             return
         elif p.get_type() == "c":
             active_coord = []
-            for i in range(row - p.get_vision(), row + p.get_vision()):
+            for i in range(row - p.get_vision(), row + p.get_vision()+1):
                 curr_row = i % self._dimension
                 curr_p = self.get_person_at_coord(curr_row, col)
                 if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
                     active_coord.append((curr_row, col))
 
-            for j in range(col - p.get_vision(), col + p.get_vision()):
+            for j in range(col - p.get_vision(), col + p.get_vision()+1):
                 curr_col = j % self._dimension
                 curr_p = self.get_person_at_coord(row, curr_col)
                 if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
@@ -69,7 +69,7 @@ class Town:
         else:
             active_count = 0.0
             cop_count = 0.0
-            for i in range(row - p.get_vision(), row + p.get_vision()):
+            for i in range(row - p.get_vision(), row + p.get_vision()+1):
                 curr_row = i % self._dimension
                 curr_p = self.get_person_at_coord(curr_row, col)
                 if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
@@ -77,7 +77,7 @@ class Town:
                 elif curr_p != -1 and curr_p.get_type() == "c":
                     cop_count += 1
 
-            for j in range(col - p.get_vision(), col + p.get_vision()):
+            for j in range(col - p.get_vision(), col + p.get_vision()+1):
                 curr_col = j % self._dimension
                 curr_p = self.get_person_at_coord(row, curr_col)
                 if curr_p != -1 and curr_p.get_type() == "a" and curr_p.is_active():
@@ -91,6 +91,7 @@ class Town:
             return
         time = rand.randint(0, ROUNDS - self._curr_round)
         agent = self.get_person_at_coord(coord[0], coord[1])
+        self._grid[coord[0]][coord[1]] = -1
         agent.set_time(time)
         self._jail.append(agent)
         # TODO put prisoners back in the game
@@ -98,10 +99,12 @@ class Town:
     def run_round(self):
         for row in range(self._dimension):
             for col in range(self._dimension):
-                p = self.get_person_at_coord(row, col)
+                curr_row, curr_col = row, col
+                p = self.get_person_at_coord(curr_row, curr_col)
                 if p != -1:
-                    self.move_person(row, col)
-                self.person_action(row, col)
+                    new_coord = self.move_person(curr_row, curr_col)
+                    curr_row, curr_col = new_coord
+                self.person_action(curr_row, curr_col)
         self.let_out_of_jail()
 
     def let_out_of_jail(self):
@@ -125,12 +128,14 @@ class Town:
             chosen = rand.choice(empties)
             self._grid[chosen[0], chosen[1]] = self.get_person_at_coord(row, col)
             self._grid[row, col] = -1
+            return chosen
+        return row, col
 
     def get_vision_col(self, vision, row, col):
-        return [(j % self._dimension, col) for j in range(row - vision, row + vision) if j != row]
+        return [(j % self._dimension, col) for j in range(row - vision, row + vision+1) if j != row]
 
     def get_vision_row(self, vision, row, col):
-        return [(row, i % self._dimension) for i in range(col - vision, col + vision) if i != col]
+        return [(row, i % self._dimension) for i in range(col - vision, col + vision+1) if i != col]
 
     def get_empties(self):
         empties = []
