@@ -173,40 +173,77 @@ class Town:
 
 
 def plots(rounds=100):
-    cop_densities = [0, 0.05, 0.074, 0.1, 0.15, 0.2]
+    ### Cop Densities
+    cop_densities = [0, 0.025, 0.05, 0.074, 0.1, 0.15, 0.2, 0.35, 0.5]
     level_for_cops = []
     for dens in cop_densities:
         town = Town(cop_density=dens)
         # town.display()
         town.run_n_rounds(n=rounds)
-        print(town._rebellions_level)
+        # print(town._rebellions_level)
         level_for_cops.append(town.get_rebel_average())
-    print(level_for_cops)
+    # print(level_for_cops)
 
     plt.scatter(cop_densities, level_for_cops)
     plt.title("Rebelliousness Level per Cop Density")
-    plt.ylabel("Rebelliousness Level")
+    plt.ylabel("Rebelliousness Level (#Actives\#Agents)")
     plt.xlabel("Cop Density")
+    plt.ylim(0, 1)
+    plt.xlim(xmin=0)
     plt.show()
 
+    # Jail Terms
     max_jail_term = [0, 25, 50, 75, 100]
     level_for_jail_time = []
     for j in max_jail_term:
         town = Town(j_max=j)
         town.run_n_rounds(n=rounds)
-        print(town.get_jail_level())
+        # print(town.get_jail_level())
         level_for_jail_time.append(town.get_rebel_average())
-    print(level_for_jail_time)
+    # print(level_for_jail_time)
     plt.scatter(max_jail_term, level_for_jail_time)
     plt.title("Rebelliousness Level per Max Jail Term")
-    plt.ylabel("Rebelliousness Level")
+    plt.ylabel("Rebelliousness Level (#Actives\#Agents)")
     plt.xlabel("Max Jail Term")
+    plt.ylim(0, 1)
+    plt.xlim(xmin=0)
+    plt.show()
+
+    # Legitimacy Levels
+    legitimacy_levels = [0, 0.25, 0.5, 0.75, 1]
+    level_per_legit =[]
+    for leg in legitimacy_levels:
+        town = Town(legitimacy=leg)
+        town.run_n_rounds(n=rounds)
+        level_per_legit.append(town.get_rebel_average())
+    plt.scatter(legitimacy_levels, level_per_legit)
+    plt.title("Rebelliousness Level per Legitimacy Level")
+    plt.ylabel("Rebelliousness Level (#Actives\#Agents)")
+    plt.xlabel("Legitimacy Level")
+    plt.ylim(0, 1)
+    plt.xlim(xmin=0)
     plt.show()
 
 
+def full_factorial():
+    cop_densities = [0, 0.025, 0.05, 0.1, 0.2, 0.35]
+    max_jail_term = [0, 25, 50, 75, 100]
+    legitimacy_levels = [0, 0.25, 0.5, 0.75, 1]
+
+    for dens in cop_densities:
+        for jail in max_jail_term:
+            for leg in legitimacy_levels:
+                town = Town(cop_density=dens, j_max=jail, legitimacy=leg)
+                town.run_n_rounds()
+                print(dens, jail, leg, town.get_rebel_average())
 
 
-plots()
+
+
+
+# plots()
+full_factorial()
+
 # town = Town(cop_density=0.0)
 # print(town.get_rebelliousness_level())
 # town.run_n_rounds()
