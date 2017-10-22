@@ -1,6 +1,8 @@
 # Models
 Sciences Models to Social Phenomena.
-All models are implemented with Python.
+All models are implemented with Python. <br />
+Each folder is a self contained model.
+
 
 
 ## Schelling's Model of Segregation
