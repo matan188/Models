@@ -1,5 +1,6 @@
 # Models
-Sciences Models to Social Phenomena
+Sciences Models to Social Phenomena.
+All models are implemented with Python.
 
 
 ## Schelling's Model of Segregation
@@ -9,3 +10,13 @@ The model is built of a grid, representing a town, in which each cell can either
 The model shows that segregation are formed very quickly and even when setting the threshold higher or introducing other incitements for agents to be more tolerant, the segregation is difficult to break. 
 
 Implemented with Python and some insights are made possible using matplotlib graphs and visualizations.
+
+[More info](http://nifty.stanford.edu/2014/mccown-schelling-model-segregation/)
+
+## Epstein's model of Generalized Rebellion Against Central Authority
+
+Implementation of Epstein's model describing how certain factors (authority enforcement, legitimacy and punishment levels) can affect the rebellion frequency. 
+
+The implementation offers graphs that help understanding how each parameter can affect the rebellion level.
+
+[More info](http://www.pnas.org/content/99/suppl_3/7243.full)
